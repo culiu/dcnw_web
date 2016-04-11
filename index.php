@@ -3,7 +3,8 @@
     <head>
         <meta charset="utf-8">
         <title> DCNW profiling </title>
-        <script type="text/javascript" src="d3/d3.min.js"></script>
+        <script type="text/javascript" src="d3/d3.min.js"></script> 
+        <link rel="stylesheet" type="text/css" href="dcnw.css">
     </head>
 
     <body> 
@@ -49,10 +50,34 @@
         ?> 
 
         <script type="text/javascript">
-            var w = 800;
-            var h =800;
+            var w = 600;
+            var h =600;
+            var padding = 20;
 
             var dataset = <?php echo json_encode($latencies)?>;
+
+            var max_x = d3.max(dataset, function(d) {return d[0];});
+            var max_y = d3.max(dataset, function(d) {return d[1];});
+
+            var xScale = d3.scale.linear()
+                                 .domain([0, d3.max(dataset, function(d) {return d[0];})])
+                                 .range([0, w*0.9]);
+
+            var yScale = d3.scale.linear()
+                                 .domain([0, d3.max(dataset, function(d) {return d[1];})])
+                                 .range([0, w*0.9]);
+
+            var radius = w / max_x / 2 * 0.6;
+
+            var xAxis = d3.svg.axis()
+                              .scale(xScale)
+                              .orient("bottom")
+                              .ticks(max_x);
+
+            var yAxis = d3.svg.axis()
+                              .scale(yScale)
+                              .orient("left")
+                              .ticks(max_y);
 
             var svg = d3.select("body")
                                 .append("svg")
@@ -63,9 +88,9 @@
                   .data(dataset)
                   .enter()
                   .append("circle")
-                  .attr("cx", function(d) { return d[0] * 100})
-                  .attr("cy", function(d) {return d[1] * 100})
-                  .attr("r", function(d) {return 10})
+                  .attr("cx", function(d) { return xScale(d[0])})
+                  .attr("cy", function(d) {return yScale(d[1])})
+                  .attr("r", function(d) {return radius})
                   .attr("fill", function(d) {
                     if (d[2] < 2000)
                         {return "green"}
@@ -74,6 +99,16 @@
                     else
                         {return "red"}
                   });
+
+            svg.append("g")
+               .attr("class", "axis")
+               .attr("transform", "translate(0, " + padding + ")")
+               .call(xAxis);
+
+            svg.append("g")
+               .attr("class", "axis")
+               .attr("transform", "translate(" + padding + ",0)")
+               .call(yAxis);
         </script>
     </body>
 </html>
