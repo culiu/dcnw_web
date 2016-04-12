@@ -9,7 +9,34 @@
 
     <body> 
         <?php
-          $latencies = array(
+
+          $servername = "127.0.0.1";
+          $username = "root";
+          $password = "mIcroware9";
+          $dbname = "sample_records";
+
+          $conn = mysqli_connect($servername, $username, $password, $dbname);
+          if (!$conn) {
+            die("Connection failed: " . mysqli_connect_error());
+          }
+
+          $sql = "SELECT SRC, DST, latency FROM records";
+          $result = mysqli_query($conn, $sql);
+
+          $queried_latencies = array();
+
+          if (mysqli_num_rows($result) > 0) {
+            while ($row = mysqli_fetch_assoc($result)) {
+//              echo "SRC: " . $row["SRC"]. " - DST: " . $row["DST"] . " " . $row["latency"] . "<br>";
+              $queried_latencies[] = array ($row["SRC"], $row["DST"], (int) $row["latency"]);
+            } 
+          } else {
+            echo "0 results";
+          }
+
+          mysqli_close($conn);
+
+/*          $latencies = array(
             array(1,1,0),
             array(1, 2, 1800),
             array(1, 3, 3000),
@@ -47,6 +74,7 @@
             array(6, 5, 2000),
             array(6, 6, 0)
           );
+ */
         ?> 
 
         <script type="text/javascript">
@@ -54,7 +82,7 @@
             var h =600;
             var padding = 20;
 
-            var dataset = <?php echo json_encode($latencies)?>;
+            var dataset = <?php echo json_encode($queried_latencies)?>;
 
             var max_x = d3.max(dataset, function(d) {return d[0];});
             var max_y = d3.max(dataset, function(d) {return d[1];});
